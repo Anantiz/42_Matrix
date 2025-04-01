@@ -1,1 +1,1 @@
-compile='clang++ -std=c++17 -mavx -mavx2 -march=native -g3'
+alias compile='clang++ -std=c++17 -mavx -mavx2 -march=native -g3'

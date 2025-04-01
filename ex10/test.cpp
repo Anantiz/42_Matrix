@@ -46,5 +46,11 @@ int main() {
     // [0.0, 0.0, 1.0, 0.0, -3.6666667]
     // [0.0, 0.0, 0.0, 1.0, 29.5]
 
+    Matrix<float> u5 = {
+        {4, 7},
+        {2, 1}
+    };
+    std::cout << "u5: \n" << u5.row_echelon() << std::endl;
+
     return 0;
 }

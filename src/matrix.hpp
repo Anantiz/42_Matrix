@@ -107,7 +107,11 @@ public:
     static Matrix<T> linear_combination(const std::vector<Matrix<T>> &matrices, const std::vector<T> &coefficients);
     static Matrix<T> linear_interpolation(const Matrix<T> &a, const Matrix<T> &b, T t);
     Matrix<T> &row_echelon();
-    T determinant() const;
+    double determinant() const;
+    size_t rank() const;
+    Matrix<T> inverse() const;
+
+
 
     /**
      * misc
@@ -138,7 +142,16 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const Matrix<T> &matrix) {
         for (size_t i = 0; i < matrix._rows; i++) {
             for (size_t j = 0; j < matrix._cols; j++) {
-                os << matrix._data[i * matrix._cols + j] << " ";
+                os << matrix._data[i * matrix._cols + j];
+                #ifdef WRITE_MATRIX_COMMA
+                    if (j != matrix._cols - 1) {
+                        os << ", ";
+                    }
+                #else
+                    if (j != matrix._cols - 1) {
+                        os << " ";
+                    }
+                #endif
             }
             os << std::endl;
         }

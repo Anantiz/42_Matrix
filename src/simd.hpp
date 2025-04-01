@@ -157,47 +157,47 @@ struct IntrinsicType<double> {
  * :param size: the full size of the arrays
  * :return: void
  */
-template<typename T>
-void simd_memmove(T* dest, const T* src, size_t size) {
-    using Intrinsic = IntrinsicType<T>;
-    using VecType = typename Intrinsic::VecType;
+// template<typename T>
+// void simd_memmove(T* dest, const T* src, size_t size) {
+//     using Intrinsic = IntrinsicType<T>;
+//     using VecType = typename Intrinsic::VecType;
 
-    if (dest > src) {  // Copy backwards
-        if (size < Intrinsic::BlockSize || dest - src < Intrinsic::BlockSize) {
-            for (ssize_t k = size; k > 0; k--) {
-                dest[k - 1] = src[k - 1];  // Fix out-of-bounds error
-            }
-            return;
-        } else {
-            ssize_t k = size - Intrinsic::BlockSize;
-            for (; k >= Intrinsic::BlockSize; k -= Intrinsic::BlockSize) {  // Fix boundary condition
-                VecType src_vec = Intrinsic::load(src + k);
-                Intrinsic::store(dest + k, src_vec);
-            }
-            for (; k > 0; k--) {  // Fix missing src[0]
-                dest[k - 1] = src[k - 1];
-            }
-        }
-    } else {  // Copy forward
-        if (size < Intrinsic::BlockSize || src - dest < Intrinsic::BlockSize) {
-            for (size_t k = 0; k < size; k++) {
-                dest[k] = src[k];
-            }
-            return;
-        } else {
-            size_t margin = size - size % Intrinsic::BlockSize;
-            size_t k = 0;
+//     if (dest > src) {  // Copy backwards
+//         if (size < Intrinsic::BlockSize || dest - src < Intrinsic::BlockSize) {
+//             for (ssize_t k = size; k > 0; k--) {
+//                 dest[k - 1] = src[k - 1];  // Fix out-of-bounds error
+//             }
+//             return;
+//         } else {
+//             ssize_t k = size - Intrinsic::BlockSize;
+//             for (; k >= Intrinsic::BlockSize; k -= Intrinsic::BlockSize) {  // Fix boundary condition
+//                 VecType src_vec = Intrinsic::load(src + k);
+//                 Intrinsic::store(dest + k, src_vec);
+//             }
+//             for (; k > 0; k--) {  // Fix missing src[0]
+//                 dest[k - 1] = src[k - 1];
+//             }
+//         }
+//     } else {  // Copy forward
+//         if (size < Intrinsic::BlockSize || src - dest < Intrinsic::BlockSize) {
+//             for (size_t k = 0; k < size; k++) {
+//                 dest[k] = src[k];
+//             }
+//             return;
+//         } else {
+//             size_t margin = size - size % Intrinsic::BlockSize;
+//             size_t k = 0;
 
-            for (; k < margin; k += Intrinsic::BlockSize) {
-                VecType src_vec = Intrinsic::load(src + k);
-                Intrinsic::store(dest + k, src_vec);
-            }
-            for (; k < size; k++) {
-                dest[k] = src[k];
-            }
-        }
-    }
-}
+//             for (; k < margin; k += Intrinsic::BlockSize) {
+//                 VecType src_vec = Intrinsic::load(src + k);
+//                 Intrinsic::store(dest + k, src_vec);
+//             }
+//             for (; k < size; k++) {
+//                 dest[k] = src[k];
+//             }
+//         }
+//     }
+// }
 
 /**
  * @brief

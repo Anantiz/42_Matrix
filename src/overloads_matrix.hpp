@@ -19,13 +19,9 @@ Matrix<T> &Matrix<T>::operator=(const Matrix<T> &other) {
         if (new_buff == nullptr)
             throw std::bad_alloc();
     }
-    #ifndef NO_SIMD
-        simd_memmove(new_buff, other._data, other._size);
-    #else
-        for (size_t i = 0; i < other._rows * other._cols; i++) {
-            new_buff[i] = other._data[i];
-        }
-    #endif
+    for (size_t i = 0; i < other._rows * other._cols; i++) {
+        new_buff[i] = other._data[i];
+    }
     if (new_buff != _data)
         std::free(_data);
     _data = new_buff;

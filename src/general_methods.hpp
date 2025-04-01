@@ -213,10 +213,13 @@ Matrix<T> &Matrix<T>::row_echelon() {
 }
 
 template <typename T>
-T Matrix<T>::determinant() const {
-    Matrix<T> tmp(*this); // throw if not square
+double Matrix<T>::determinant() const {
+    if (_rows != _cols) {
+        throw std::invalid_argument("determinant:Matrix must be square");
+    }
+    Matrix<T> reduced(*this);
 
-    std::vector<T> coefs(_cols, 1);
+    std::vector<double> coefs(_cols, 1);
     int swaps=0;
 
     // ROW ECHELON
@@ -229,28 +232,30 @@ T Matrix<T>::determinant() const {
             size_t pivot_row = current_row;
             // Select a row who has it's `current_col` at not zero, and the largest if possible
             for (size_t idx_row=current_row; idx_row<_rows;idx_row++) {
-                if (my_abs(tmp._data[idx_row*_cols + current_col]) > my_abs(tmp._data[pivot_row*_cols + current_col])) {
+                if (my_abs(reduced._data[idx_row*_cols + current_col]) > my_abs(reduced._data[pivot_row*_cols + current_col])) {
                     pivot_row = idx_row;
                 }
             }
             // If all remaining row have a 0 in the current column go to the next one and check again
-            if (tmp._data[pivot_row*_cols+ current_col] == 0) {
-                coefs[current_col] = 0;
-                ++current_col;
-                continue;
+            if (reduced._data[pivot_row*_cols+ current_col] == 0) {
+                return 0;
+                // If one coefficient is zero, the determinant is zero so stop early
+                // coefs[current_col] = 0;
+                // ++current_col;
+                // continue;
             }
             if (current_row != pivot_row) {
-                swap_rows(tmp, current_row, pivot_row);
+                swap_rows(reduced, current_row, pivot_row);
                 swaps++;
             }
 
             // 2. Normalize the row with regards to the left-most entry
-            T head_val = tmp._data[current_row*_cols + current_col];
+            T head_val = reduced._data[current_row*_cols + current_col];
             if (head_val != 0 ) {
-                T* ptr_start = (T*)(tmp._data + current_row * _cols);
+                T* ptr_start = (T*)(reduced._data + current_row * _cols);
                 for (size_t i=current_col; i < _cols; i++) {
                     ptr_start[i] /= head_val;
-                    coefs[current_col] = head_val;
+                    coefs[current_col] = (double)head_val;
                 }
             } else {
                 // Empty row, a degree of liberty
@@ -259,20 +264,62 @@ T Matrix<T>::determinant() const {
 
             // 3. Forward substitution
             for (size_t row=current_row+1; row<_rows; row++) {
-                sub_row(tmp, row, current_row, tmp._data[row*_cols + current_col]);
+                sub_row(reduced, row, current_row, reduced._data[row*_cols + current_col]);
             }
             // 4. Back substitution
             for (ssize_t row=current_row-1; row>=0; row--) {
-                sub_row(tmp, row, current_row, tmp._data[row*_cols + current_col]);
+                sub_row(reduced, row, current_row, reduced._data[row*_cols + current_col]);
             }
             ++current_row;
             ++current_col; // Create a zero lower triangle
         }
     }
 
-    T prod = 1;
+    double det = 1;
     for (size_t i=0; i<_cols;i++) {
-        prod *= tmp._data[i*_cols + i] * coefs[i];
+        det *= coefs[i];
     }
-    return prod * (swaps%2 ? -1 : 1);
+    return det * (swaps%2 ? -1 : 1);
+}
+
+template <typename T>
+size_t Matrix<T>::rank() const {
+    Matrix<T> tmp(*this);
+    tmp.row_echelon();
+
+    for (int i=_rows-1; i>=0; i--) {
+        int offset = i * _cols;
+        for (int j = 0; j < (int)_cols; j++) {
+            if (tmp[offset+j] != 0) {
+                return i+1;
+            }
+        }
+    }
+    return 0;
+}
+
+template <typename T>
+Matrix<T> Matrix<T>::inverse() const {
+    if (_rows != _cols) {
+        throw std::invalid_argument("inverse:Matrix must be square");
+    }
+    Matrix<T> augmented(_rows, _cols * 2);
+    for (size_t i = 0; i < _rows; i++) {
+        for (size_t j = 0; j < _cols; j++) {
+            augmented._data[i * augmented._cols + j] = _data[i * _cols + j];
+            if (i == j) {
+                augmented._data[i * augmented._cols + j + _cols] = 1;
+            } else {
+                augmented._data[i * augmented._cols + j + _cols] = 0;
+            }
+        }
+    }
+    augmented.row_echelon();
+    Matrix<T> inverse(_rows, _cols);
+    for (size_t i = 0; i < _rows; i++) {
+        for (size_t j = 0; j < _cols; j++) {
+            inverse._data[i * _cols + j] = augmented._data[i * augmented._cols + j + _cols];
+        }
+    }
+    return inverse;
 }

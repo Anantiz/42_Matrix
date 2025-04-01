@@ -25,13 +25,9 @@ Matrix<T>::Matrix(const Matrix<T> &other) : _rows(other._rows), _cols(other._col
     if (_data == nullptr) {
         throw std::bad_alloc();
     }
-    #ifndef NO_SIMD
-        simd_memmove(_data, other._data, _size);
-    #else
-        for (size_t i = 0; i < _rows * _cols; i++) {
-            _data[i] = other._data[i];
-        }
-    #endif
+    for (size_t i = 0; i < _rows * _cols; i++) {
+        _data[i] = other._data[i];
+    }
 }
 
 template <typename T>
